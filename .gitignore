@@ -1,0 +1,22 @@
+# Environment variables (API keys, secrets)
+.env
+
+# Debug/log files
+debug_log.txt
+ocr_debug.txt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Uploaded files
+uploads/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
