@@ -1,0 +1,16 @@
+MEDICAL LABORATORY REPORT  
+Patient Name: Rahul M  
+Age: 22  
+Gender: Male  
+Test Results:  
+Hemoglobin: 9.8 g/dL  
+Total Cholesterol: 245 mg/dL  
+LDL Cholesterol: 165 mg/dL  
+HDL Cholesterol: 38 mg/dL  
+Triglycerides: 210 mg/dL  
+Remarks:  
+Hemoglobin level is low.  
+Cholesterol levels are above normal range.  
+Doctor Signature:  
+Dr. S. Kumar  
+
