@@ -1,5 +1,5 @@
 <?php
-// Shared OTP sending logic for DrugSearch
+// Shared OTP sending logic for DrugsSearch
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -56,11 +56,11 @@ function sendOtpForEmail(mysqli $conn, string $email): array
         $mail->SMTPSecure = 'tls';
         $mail->Port = 587;
 
-        $mail->setFrom('YOUR_GMAIL@gmail.com', 'DrugSearch');
+        $mail->setFrom('YOUR_GMAIL@gmail.com', 'DrugsSearch');
         $mail->addAddress($email);
 
         $mail->isHTML(true);
-        $mail->Subject = 'Your DrugSearch OTP';
+        $mail->Subject = 'Your DrugsSearch OTP';
         $mail->Body = "
             <h3>OTP Verification</h3>
             <p>Your OTP is <b>$otp</b></p>
