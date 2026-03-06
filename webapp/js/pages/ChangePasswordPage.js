@@ -6,6 +6,9 @@ function ChangePasswordPage({ onNavigate }) {
     const [form, setForm] = React.useState({ current: '', newPass: '', confirm: '' });
     const [loading, setLoading] = React.useState(false);
     const [message, setMessage] = React.useState({ text: '', type: '' });
+    const [showCurrent, setShowCurrent] = React.useState(false);
+    const [showNew, setShowNew] = React.useState(false);
+    const [showConfirm, setShowConfirm] = React.useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -22,6 +25,8 @@ function ChangePasswordPage({ onNavigate }) {
         setLoading(false);
     };
 
+    const eyeStyle = { position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '20px', userSelect: 'none' };
+
     return (
         <div className="page-content">
             <div className="flex items-center gap-12 mb-24">
@@ -37,15 +42,24 @@ function ChangePasswordPage({ onNavigate }) {
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
                             <label className="form-label">Current Password</label>
-                            <input className="form-input" type="password" placeholder="Enter current password" value={form.current} onChange={e => setForm(p => ({ ...p, current: e.target.value }))} />
+                            <div style={{ position: 'relative' }}>
+                                <input className="form-input" type={showCurrent ? 'text' : 'password'} placeholder="Enter current password" value={form.current} onChange={e => setForm(p => ({ ...p, current: e.target.value }))} style={{ paddingRight: '44px' }} />
+                                <span className="material-icons-outlined" onClick={() => setShowCurrent(!showCurrent)} style={eyeStyle}>{showCurrent ? 'visibility' : 'visibility_off'}</span>
+                            </div>
                         </div>
                         <div className="form-group">
                             <label className="form-label">New Password</label>
-                            <input className="form-input" type="password" placeholder="Enter new password" value={form.newPass} onChange={e => setForm(p => ({ ...p, newPass: e.target.value }))} />
+                            <div style={{ position: 'relative' }}>
+                                <input className="form-input" type={showNew ? 'text' : 'password'} placeholder="Enter new password" value={form.newPass} onChange={e => setForm(p => ({ ...p, newPass: e.target.value }))} style={{ paddingRight: '44px' }} />
+                                <span className="material-icons-outlined" onClick={() => setShowNew(!showNew)} style={eyeStyle}>{showNew ? 'visibility' : 'visibility_off'}</span>
+                            </div>
                         </div>
                         <div className="form-group">
                             <label className="form-label">Confirm New Password</label>
-                            <input className="form-input" type="password" placeholder="Confirm new password" value={form.confirm} onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))} />
+                            <div style={{ position: 'relative' }}>
+                                <input className="form-input" type={showConfirm ? 'text' : 'password'} placeholder="Confirm new password" value={form.confirm} onChange={e => setForm(p => ({ ...p, confirm: e.target.value }))} style={{ paddingRight: '44px' }} />
+                                <span className="material-icons-outlined" onClick={() => setShowConfirm(!showConfirm)} style={eyeStyle}>{showConfirm ? 'visibility' : 'visibility_off'}</span>
+                            </div>
                         </div>
                         <button className="btn btn-primary btn-full" type="submit" disabled={loading}>
                             {loading ? 'Updating...' : 'Change Password'}

@@ -7,6 +7,7 @@ function AdminLoginPage({ onNavigate }) {
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
+    const [showPassword, setShowPassword] = React.useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -31,7 +32,7 @@ function AdminLoginPage({ onNavigate }) {
         <div className="auth-container">
             <div className="auth-card">
                 <div className="auth-header">
-                    <div className="auth-logo" style={{ background: 'transparent' }}><img src="assets/logo.png" alt="DrugsSearch" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} /></div>
+                    <div className="auth-logo" style={{ background: 'transparent' }}><img src="assets/logo.png" alt="DrugSearch" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} /></div>
                     <h1>Admin Portal</h1>
                     <p>Secure access required</p>
                 </div>
@@ -43,7 +44,10 @@ function AdminLoginPage({ onNavigate }) {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Password</label>
-                        <input className="form-input" type="password" placeholder="Enter admin password" value={password} onChange={e => setPassword(e.target.value)} />
+                        <div style={{ position: 'relative' }}>
+                            <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter admin password" value={password} onChange={e => setPassword(e.target.value)} style={{ paddingRight: '44px' }} />
+                            <span className="material-icons-outlined" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '20px', userSelect: 'none' }}>{showPassword ? 'visibility' : 'visibility_off'}</span>
+                        </div>
                     </div>
                     <button className="btn btn-full btn-lg" type="submit" disabled={loading} style={{ background: 'linear-gradient(135deg, #7C3AED, #A855F7)', color: 'white' }}>
                         {loading ? 'Authenticating...' : 'Admin Sign In'}

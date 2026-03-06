@@ -7,6 +7,7 @@ function LoginPage({ onNavigate }) {
     const [password, setPassword] = React.useState('');
     const [error, setError] = React.useState('');
     const [loading, setLoading] = React.useState(false);
+    const [showPassword, setShowPassword] = React.useState(false);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -42,9 +43,9 @@ function LoginPage({ onNavigate }) {
         <div className="auth-container">
             <div className="auth-card">
                 <div className="auth-header">
-                    <div className="auth-logo" style={{ background: 'transparent' }}><img src="assets/logo.png" alt="DrugsSearch" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} /></div>
+                    <div className="auth-logo" style={{ background: 'transparent' }}><img src="assets/logo.png" alt="DrugSearch" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} /></div>
                     <h1>Welcome Back</h1>
-                    <p>Sign in to DrugsSearch</p>
+                    <p>Sign in to DrugSearch</p>
                 </div>
                 <form className="auth-body" onSubmit={handleSubmit}>
                     {error && <div className="alert alert-danger"><span className="material-icons-outlined" style={{ fontSize: '18px' }}>error</span>{error}</div>}
@@ -54,7 +55,10 @@ function LoginPage({ onNavigate }) {
                     </div>
                     <div className="form-group">
                         <label className="form-label">Password</label>
-                        <input className="form-input" type="password" placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} />
+                        <div style={{ position: 'relative' }}>
+                            <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} style={{ paddingRight: '44px' }} />
+                            <span className="material-icons-outlined" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '20px', userSelect: 'none' }}>{showPassword ? 'visibility' : 'visibility_off'}</span>
+                        </div>
                     </div>
                     <div style={{ textAlign: 'right', marginBottom: '20px' }}>
                         <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('forgot-password'); }} style={{ fontSize: '0.85rem' }}>Forgot password?</a>

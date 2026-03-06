@@ -22,6 +22,26 @@ function AdminDashboardPage({ onNavigate }) {
         common_dosage: '', side_effects: '', safety_warnings: '', storage_details: ''
     });
 
+    // Parameter & Drug lists for delete
+    const [paramList, setParamList] = React.useState([]);
+    const [drugList, setDrugList] = React.useState([]);
+    const [paramSearch, setParamSearch] = React.useState('');
+    const [drugSearch, setDrugSearch] = React.useState('');
+
+    const fetchParamList = async () => {
+        try {
+            const res = await api.get('web_admin_parameters.php');
+            setParamList(res.data?.parameters || []);
+        } catch (e) { }
+    };
+
+    const fetchDrugList = async () => {
+        try {
+            const res = await api.get('web_admin_drugs.php');
+            setDrugList(res.data?.drugs || []);
+        } catch (e) { }
+    };
+
     React.useEffect(() => {
         Promise.all([
             ApiService.getAdminStats().catch(() => ({ data: {} })),
@@ -33,6 +53,8 @@ function AdminDashboardPage({ onNavigate }) {
             setReports(r.data?.users || []);
             setLoading(false);
         });
+        fetchParamList();
+        fetchDrugList();
     }, []);
 
     const handleAddParam = async (e) => {
@@ -43,6 +65,7 @@ function AdminDashboardPage({ onNavigate }) {
             });
             setMessage({ text: 'Parameter added!', type: 'success' });
             setParamForm({ parameter_name: '', unit: '', min_value: '', max_value: '', category: '', condition_if_abnormal: '', drug_category: '', example_drugs: '' });
+            fetchParamList();
         } catch (err) { setMessage({ text: err.response?.data?.message || 'Failed', type: 'error' }); }
     };
 
@@ -52,14 +75,34 @@ function AdminDashboardPage({ onNavigate }) {
             await ApiService.adminAddDrug(drugForm);
             setMessage({ text: 'Drug added!', type: 'success' });
             setDrugForm({ drug_name: '', generic_name: '', drug_category: '', indication: '', description: '', common_dosage: '', side_effects: '', safety_warnings: '', storage_details: '' });
+            fetchDrugList();
         } catch (err) { setMessage({ text: err.response?.data?.message || 'Failed', type: 'error' }); }
     };
 
-    const handleLogout = () => { logout(); onNavigate('admin-login'); };
+    const handleDeleteParam = async (id, name) => {
+        if (!window.confirm(`Delete parameter "${name}"? This cannot be undone.`)) return;
+        try {
+            await api.post('admin_delete_parameter.php', { id });
+            setMessage({ text: `Parameter "${name}" deleted`, type: 'success' });
+            fetchParamList();
+        } catch (err) { setMessage({ text: err.response?.data?.message || 'Delete failed', type: 'error' }); }
+    };
+
+    const handleDeleteDrug = async (id, name) => {
+        if (!window.confirm(`Delete drug "${name}"? This cannot be undone.`)) return;
+        try {
+            await api.post('admin_delete_drug.php', { id });
+            setMessage({ text: `Drug "${name}" deleted`, type: 'success' });
+            fetchDrugList();
+        } catch (err) { setMessage({ text: err.response?.data?.message || 'Delete failed', type: 'error' }); }
+    };
+
+    const handleLogout = () => { if (window.confirm('Are you sure you want to logout?')) { logout(); onNavigate('admin-login'); } };
 
     if (loading) return <div className="loading-overlay"><div className="spinner"></div></div>;
 
-    const tabs = ['overview', 'users', 'reports', 'add-parameter', 'add-drug'];
+    const filteredParams = paramList.filter(p => p.parameter_name.toLowerCase().includes(paramSearch.toLowerCase()));
+    const filteredDrugs = drugList.filter(d => d.drug_name.toLowerCase().includes(drugSearch.toLowerCase()));
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -164,6 +207,36 @@ function AdminDashboardPage({ onNavigate }) {
                                     <button className="btn btn-primary mt-16" type="submit">Add Parameter</button>
                                 </form>
                             </div></div>
+
+                            {/* Existing Parameters List */}
+                            <h3 className="mt-24 mb-16" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                Existing Parameters ({paramList.length})
+                            </h3>
+                            <div style={{ maxWidth: '700px', marginBottom: '16px' }}>
+                                <input className="form-input" placeholder="Search parameters..." value={paramSearch} onChange={e => setParamSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+                            </div>
+                            <div className="card" style={{ maxWidth: '700px' }}><div className="card-body" style={{ padding: 0 }}>
+                                <table>
+                                    <thead><tr><th>ID</th><th>Name</th><th>Unit</th><th>Range</th><th>Category</th><th style={{ width: '60px' }}>Action</th></tr></thead>
+                                    <tbody>
+                                        {filteredParams.map(p => (
+                                            <tr key={p.id}>
+                                                <td>{p.id}</td>
+                                                <td style={{ fontWeight: 600 }}>{p.parameter_name}</td>
+                                                <td>{p.unit}</td>
+                                                <td>{p.min_value} - {p.max_value}</td>
+                                                <td>{p.category}</td>
+                                                <td>
+                                                    <button className="btn-icon" style={{ color: '#EF4444' }} onClick={() => handleDeleteParam(p.id, p.parameter_name)} title="Delete">
+                                                        <span className="material-icons-outlined" style={{ fontSize: '20px' }}>delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredParams.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No parameters found</td></tr>}
+                                    </tbody>
+                                </table>
+                            </div></div>
                         </div>
                     )}
 
@@ -186,6 +259,33 @@ function AdminDashboardPage({ onNavigate }) {
                                     <div className="form-group"><label className="form-label">Storage Details</label><input className="form-input" value={drugForm.storage_details} onChange={e => setDrugForm(p => ({ ...p, storage_details: e.target.value }))} /></div>
                                     <button className="btn btn-primary mt-16" type="submit">Add Drug</button>
                                 </form>
+                            </div></div>
+
+                            {/* Existing Drugs List */}
+                            <h3 className="mt-24 mb-16">Existing Drugs ({drugList.length})</h3>
+                            <div style={{ maxWidth: '700px', marginBottom: '16px' }}>
+                                <input className="form-input" placeholder="Search drugs..." value={drugSearch} onChange={e => setDrugSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+                            </div>
+                            <div className="card" style={{ maxWidth: '700px' }}><div className="card-body" style={{ padding: 0 }}>
+                                <table>
+                                    <thead><tr><th>ID</th><th>Drug Name</th><th>Generic Name</th><th>Category</th><th style={{ width: '60px' }}>Action</th></tr></thead>
+                                    <tbody>
+                                        {filteredDrugs.map(d => (
+                                            <tr key={d.id}>
+                                                <td>{d.id}</td>
+                                                <td style={{ fontWeight: 600 }}>{d.drug_name}</td>
+                                                <td>{d.generic_name || '-'}</td>
+                                                <td>{d.drug_category || '-'}</td>
+                                                <td>
+                                                    <button className="btn-icon" style={{ color: '#EF4444' }} onClick={() => handleDeleteDrug(d.id, d.drug_name)} title="Delete">
+                                                        <span className="material-icons-outlined" style={{ fontSize: '20px' }}>delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredDrugs.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No drugs found</td></tr>}
+                                    </tbody>
+                                </table>
                             </div></div>
                         </div>
                     )}

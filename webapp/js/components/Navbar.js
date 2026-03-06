@@ -22,7 +22,7 @@ function Sidebar({ currentPage, onNavigate, onLogout, sidebarOpen, onCloseSideba
             <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-logo">
                     <div className="logo-icon" style={{ background: 'transparent', overflow: 'hidden' }}><img src="assets/logo.png" alt="DS" style={{ width: '40px', height: '40px', borderRadius: '12px', objectFit: 'cover' }} /></div>
-                    <h2>DrugsSearch</h2>
+                    <h2>DrugSearch</h2>
                 </div>
                 <nav className="sidebar-nav">
                     <div className="sidebar-section-label">Main Menu</div>
@@ -49,7 +49,7 @@ function Sidebar({ currentPage, onNavigate, onLogout, sidebarOpen, onCloseSideba
                     ))}
                     <div
                         className="sidebar-nav-item"
-                        onClick={onLogout}
+                        onClick={() => { if (window.confirm('Are you sure you want to logout?')) onLogout(); }}
                         style={{ color: '#EF4444', marginTop: '8px' }}
                     >
                         <span className="material-icons-outlined">logout</span>

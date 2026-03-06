@@ -86,7 +86,7 @@ function App() {
                 />
                 <div className="main-content">
                     <TopBar
-                        title={pageTitle[page] || 'DrugsSearch'}
+                        title={pageTitle[page] || 'DrugSearch'}
                         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
                     />
                     {page === 'dashboard' && <DashboardPage onNavigate={navigate} />}

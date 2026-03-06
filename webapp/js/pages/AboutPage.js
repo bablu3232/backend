@@ -20,13 +20,13 @@ function AboutPage({ onNavigate }) {
                 <div className="card">
                     <div className="card-body">
                         <div className="text-center mb-24">
-                            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: 'hidden', margin: '0 auto 16px' }}><img src="assets/logo.png" alt="DrugsSearch" style={{ width: '80px', height: '80px', objectFit: 'cover' }} /></div>
-                            <h2>DrugsSearch</h2>
+                            <div style={{ width: 80, height: 80, borderRadius: 20, overflow: 'hidden', margin: '0 auto 16px' }}><img src="assets/logo.png" alt="DrugSearch" style={{ width: '80px', height: '80px', objectFit: 'cover' }} /></div>
+                            <h2>DrugSearch</h2>
                             <p className="text-sm text-muted">Version 1.0.0</p>
                         </div>
                         <div style={{ maxWidth: 600, margin: '0 auto' }}>
                             <p style={{ textAlign: 'center', lineHeight: 1.8 }}>
-                                DrugsSearch is a comprehensive medical report analyzer that helps you understand your lab results.
+                                DrugSearch is a comprehensive medical report analyzer that helps you understand your lab results.
                                 Upload your reports, get instant analysis, and search for drug information — all in one place.
                             </p>
                             <div className="grid grid-3 mt-24">
