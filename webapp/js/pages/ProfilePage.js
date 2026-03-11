@@ -9,7 +9,39 @@ function ProfilePage({ onNavigate }) {
         date_of_birth: user?.dob || '', gender: user?.gender || ''
     });
     const [loading, setLoading] = React.useState(false);
+    const [uploadingImage, setUploadingImage] = React.useState(false);
     const [message, setMessage] = React.useState({ text: '', type: '' });
+    const fileInputRef = React.useRef(null);
+
+    const handleImageClick = () => {
+        fileInputRef.current.click();
+    };
+
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setUploadingImage(true);
+        setMessage({ text: '', type: '' });
+
+        try {
+            const res = await ApiService.uploadProfileImage(user.userId, file);
+            if (res.data.status === 'success') {
+                const refreshedUserRes = await ApiService.getUserProfile(user.userId);
+                
+                // Update Local Auth Context with new Image String
+                login({ ...user, profile_image: refreshedUserRes.data.profile_image });
+                
+                setMessage({ text: 'Profile picture updated successfully!', type: 'success' });
+            } else {
+                throw new Error(res.data.message || 'Upload failed');
+            }
+        } catch (err) {
+            setMessage({ text: err.response?.data?.message || err.message || 'Failed to upload profile picture', type: 'error' });
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const handleSave = async () => {
         setLoading(true); setMessage({ text: '', type: '' });
@@ -43,6 +75,40 @@ function ProfilePage({ onNavigate }) {
                     </button>}
                 </div>
                 <div className="card-body">
+                    <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+                        <div className="avatar-edit-wrapper">
+                            {user?.profile_image ? (
+                                <img 
+                                    src={user.profile_image.startsWith('http') ? user.profile_image : `${API_BASE}${user.profile_image}`} 
+                                    alt="Profile" 
+                                    className="profile-avatar profile-avatar-lg"
+                                    style={{ opacity: uploadingImage ? 0.5 : 1 }}
+                                />
+                            ) : (
+                                <div className="profile-avatar profile-avatar-lg">
+                                    <span className="material-icons-outlined" style={{ fontSize: '48px' }}>person</span>
+                                </div>
+                            )}
+                            
+                            <div className="avatar-edit-overlay" onClick={handleImageClick}>
+                                {uploadingImage ? (
+                                    <div className="spinner spinner-sm"></div>
+                                ) : (
+                                    <span className="material-icons-outlined" style={{ fontSize: '18px' }}>camera_alt</span>
+                                )}
+                            </div>
+                        </div>
+                        <input 
+                            type="file" 
+                            ref={fileInputRef} 
+                            style={{ display: 'none' }} 
+                            accept="image/*" 
+                            onChange={handleImageChange}
+                        />
+                        <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{user?.fullName || user?.full_name}</div>
+                        <div style={{ color: 'var(--text-secondary)' }}>{user?.email}</div>
+                    </div>
+
                     <div className="grid grid-2">
                         <div className="form-group">
                             <label className="form-label">Full Name</label>

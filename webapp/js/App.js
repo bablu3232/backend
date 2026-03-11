@@ -2,7 +2,7 @@
 // App — Main Router & Layout
 // ============================================
 function App() {
-    const { isLoggedIn, isAdmin, logout } = useAuth();
+    const { isLoggedIn, isAdmin, logout, user } = useAuth();
     const [page, setPage] = React.useState('login');
     const [pageData, setPageData] = React.useState(null);
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
@@ -32,10 +32,28 @@ function App() {
         if (isLoggedIn && !isAdmin && (page === 'login' || page === 'register')) {
             navigate('dashboard');
         }
-        if (isLoggedIn && isAdmin && page === 'admin-login') {
+        if (isLoggedIn && isAdmin && (page === 'login' || page === 'register' || page === 'admin-login')) {
             navigate('admin-dashboard');
         }
-    }, [isLoggedIn, page]);
+    }, [isLoggedIn, page, isAdmin]);
+
+    // Active User Tracking (Ping every 5 minutes if logged in and not admin)
+    React.useEffect(() => {
+        let interval;
+        if (isLoggedIn && !isAdmin && user && user.id) {
+            const pingServer = () => {
+                fetch('api/ping.php', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: user.id })
+                }).catch(e => console.error('Ping failed:', e));
+            };
+            // Ping immediately, then every 5 minutes
+            pingServer();
+            interval = setInterval(pingServer, 5 * 60 * 1000);
+        }
+        return () => clearInterval(interval);
+    }, [isLoggedIn, isAdmin, user]);
 
     const pageTitle = {
         'dashboard': 'Dashboard', 'upload': 'Upload Report', 'review-values': 'Review Values',
@@ -86,7 +104,7 @@ function App() {
                 />
                 <div className="main-content">
                     <TopBar
-                        title={pageTitle[page] || 'DrugsSearch'}
+                        title={pageTitle[page] || 'DrugSearch'}
                         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
                     />
                     {page === 'dashboard' && <DashboardPage onNavigate={navigate} />}

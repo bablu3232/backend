@@ -9,6 +9,8 @@ function AdminDashboardPage({ onNavigate }) {
     const [reports, setReports] = React.useState([]);
     const [loading, setLoading] = React.useState(true);
     const [message, setMessage] = React.useState({ text: '', type: '' });
+    const chartRef = React.useRef(null);
+    const chartInstance = React.useRef(null);
 
     // Add parameter form
     const [paramForm, setParamForm] = React.useState({
@@ -22,6 +24,26 @@ function AdminDashboardPage({ onNavigate }) {
         common_dosage: '', side_effects: '', safety_warnings: '', storage_details: ''
     });
 
+    // Parameter & Drug lists for delete
+    const [paramList, setParamList] = React.useState([]);
+    const [drugList, setDrugList] = React.useState([]);
+    const [paramSearch, setParamSearch] = React.useState('');
+    const [drugSearch, setDrugSearch] = React.useState('');
+
+    const fetchParamList = async () => {
+        try {
+            const res = await api.get('web_admin_parameters.php');
+            setParamList(res.data?.parameters || []);
+        } catch (e) { }
+    };
+
+    const fetchDrugList = async () => {
+        try {
+            const res = await api.get('web_admin_drugs.php');
+            setDrugList(res.data?.drugs || []);
+        } catch (e) { }
+    };
+
     React.useEffect(() => {
         Promise.all([
             ApiService.getAdminStats().catch(() => ({ data: {} })),
@@ -33,7 +55,96 @@ function AdminDashboardPage({ onNavigate }) {
             setReports(r.data?.users || []);
             setLoading(false);
         });
+        fetchParamList();
+        fetchDrugList();
     }, []);
+
+    React.useEffect(() => {
+        if (tab === 'overview' && stats && stats.chart_data && chartRef.current) {
+            if (chartInstance.current) {
+                chartInstance.current.destroy();
+            }
+            const ctx = chartRef.current.getContext('2d');
+            
+            // Calculate dynamic max value for nice Y-axis rounding
+            const maxUsers = Math.max(...stats.chart_data.users, 10);
+            const maxReports = Math.max(...stats.chart_data.reports, 10);
+            const rawMaxVal = Math.max(maxUsers, maxReports);
+            
+            const rawStep = rawMaxVal / 4;
+            const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+            const rawStepNormalized = rawStep / magnitude;
+            let niceStepNormalized = 10;
+            if (rawStepNormalized <= 1.0) niceStepNormalized = 1.0;
+            else if (rawStepNormalized <= 2.0) niceStepNormalized = 2.0;
+            else if (rawStepNormalized <= 2.5) niceStepNormalized = 2.5;
+            else if (rawStepNormalized <= 5.0) niceStepNormalized = 5.0;
+            
+            const niceStep = niceStepNormalized * magnitude;
+            const cleanMaxVal = Math.max(niceStep * 4, 10);
+
+            chartInstance.current = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: stats.chart_data.labels,
+                    datasets: [
+                        {
+                            label: 'Users',
+                            data: stats.chart_data.users,
+                            borderColor: '#0EA5E9',
+                            backgroundColor: 'rgba(14, 165, 233, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#0EA5E9',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Reports',
+                            data: stats.chart_data.reports,
+                            borderColor: '#10B981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                            borderWidth: 2,
+                            tension: 0.3,
+                            fill: true,
+                            pointBackgroundColor: '#10B981',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { 
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: { size: 13, family: 'Inter, sans-serif' }
+                            }
+                        },
+                        tooltip: { backgroundColor: 'rgba(15, 23, 42, 0.9)', titleColor: '#fff', bodyColor: '#fff', padding: 12, cornerRadius: 8 }
+                    },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: cleanMaxVal,
+                            ticks: {
+                                stepSize: niceStep,
+                                maxTicksLimit: 5
+                            },
+                            grid: { color: 'rgba(0, 0, 0, 0.05)' } 
+                        },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+        }
+    }, [tab, stats]);
 
     const handleAddParam = async (e) => {
         e.preventDefault();
@@ -43,6 +154,7 @@ function AdminDashboardPage({ onNavigate }) {
             });
             setMessage({ text: 'Parameter added!', type: 'success' });
             setParamForm({ parameter_name: '', unit: '', min_value: '', max_value: '', category: '', condition_if_abnormal: '', drug_category: '', example_drugs: '' });
+            fetchParamList();
         } catch (err) { setMessage({ text: err.response?.data?.message || 'Failed', type: 'error' }); }
     };
 
@@ -52,14 +164,34 @@ function AdminDashboardPage({ onNavigate }) {
             await ApiService.adminAddDrug(drugForm);
             setMessage({ text: 'Drug added!', type: 'success' });
             setDrugForm({ drug_name: '', generic_name: '', drug_category: '', indication: '', description: '', common_dosage: '', side_effects: '', safety_warnings: '', storage_details: '' });
+            fetchDrugList();
         } catch (err) { setMessage({ text: err.response?.data?.message || 'Failed', type: 'error' }); }
     };
 
-    const handleLogout = () => { logout(); onNavigate('admin-login'); };
+    const handleDeleteParam = async (id, name) => {
+        if (!window.confirm(`Delete parameter "${name}"? This cannot be undone.`)) return;
+        try {
+            await api.post('admin_delete_parameter.php', { id });
+            setMessage({ text: `Parameter "${name}" deleted`, type: 'success' });
+            fetchParamList();
+        } catch (err) { setMessage({ text: err.response?.data?.message || 'Delete failed', type: 'error' }); }
+    };
+
+    const handleDeleteDrug = async (id, name) => {
+        if (!window.confirm(`Delete drug "${name}"? This cannot be undone.`)) return;
+        try {
+            await api.post('admin_delete_drug.php', { id });
+            setMessage({ text: `Drug "${name}" deleted`, type: 'success' });
+            fetchDrugList();
+        } catch (err) { setMessage({ text: err.response?.data?.message || 'Delete failed', type: 'error' }); }
+    };
+
+    const handleLogout = () => { if (window.confirm('Are you sure you want to logout?')) { logout(); onNavigate('admin-login'); } };
 
     if (loading) return <div className="loading-overlay"><div className="spinner"></div></div>;
 
-    const tabs = ['overview', 'users', 'reports', 'add-parameter', 'add-drug'];
+    const filteredParams = paramList.filter(p => p.parameter_name.toLowerCase().includes(paramSearch.toLowerCase()));
+    const filteredDrugs = drugList.filter(d => d.drug_name.toLowerCase().includes(drugSearch.toLowerCase()));
 
     return (
         <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -99,10 +231,46 @@ function AdminDashboardPage({ onNavigate }) {
                         <div>
                             <h2 className="mb-24">Dashboard Overview</h2>
                             <div className="grid grid-4 mb-24">
-                                <div className="stat-card"><div className="stat-icon blue"><span className="material-icons-outlined">people</span></div><div className="stat-info"><h4>Users</h4><div className="stat-value">{stats?.total_users || 0}</div></div></div>
-                                <div className="stat-card"><div className="stat-icon green"><span className="material-icons-outlined">description</span></div><div className="stat-info"><h4>Reports</h4><div className="stat-value">{stats?.total_reports || 0}</div></div></div>
-                                <div className="stat-card"><div className="stat-icon amber"><span className="material-icons-outlined">medication</span></div><div className="stat-info"><h4>Drugs</h4><div className="stat-value">{stats?.total_drugs || 0}</div></div></div>
-                                <div className="stat-card"><div className="stat-icon red"><span className="material-icons-outlined">science</span></div><div className="stat-info"><h4>Parameters</h4><div className="stat-value">{stats?.total_parameters || 0}</div></div></div>
+                                <div className="stat-card"><div className="stat-icon" style={{ color: '#0EA5E9', backgroundColor: 'rgba(14, 165, 233, 0.1)' }}><span className="material-icons-outlined">check_circle</span></div><div className="stat-info"><h4>Active Now</h4><div className="stat-value">{stats?.active_users || 0}</div></div></div>
+                                <div className="stat-card"><div className="stat-icon blue"><span className="material-icons-outlined">people</span></div><div className="stat-info"><h4>Total Users</h4><div className="stat-value">{stats?.total_users || 0}</div></div></div>
+                                <div className="stat-card"><div className="stat-icon green"><span className="material-icons-outlined">description</span></div><div className="stat-info"><h4>Total Reports</h4><div className="stat-value">{stats?.total_reports || 0}</div></div></div>
+                                <div className="stat-card"><div className="stat-icon amber"><span className="material-icons-outlined">medication</span></div><div className="stat-info"><h4>Total Drugs</h4><div className="stat-value">{stats?.total_drugs || 0}</div></div></div>
+                            </div>
+                            <div className="grid grid-4 mb-24">
+                                <div className="stat-card"><div className="stat-icon red"><span className="material-icons-outlined">science</span></div><div className="stat-info"><h4>Lab Parameters</h4><div className="stat-value">{stats?.total_parameters || 0}</div></div></div>
+                            </div>
+
+                            <div className="grid grid-2 mb-24">
+                                <div className="card">
+                                    <div className="card-body">
+                                        <h3 className="mb-16">System Statistics Trend</h3>
+                                        <div style={{ height: '300px', width: '100%' }}>
+                                            <canvas ref={chartRef}></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                {stats?.active_users_list && stats.active_users_list.length > 0 && (
+                                    <div className="card">
+                                        <div className="card-body" style={{ padding: 0 }}>
+                                            <h3 className="mb-16" style={{ padding: '24px 24px 0 24px' }}>Currently Active Users</h3>
+                                            <table>
+                                                <thead><tr><th>Name</th><th>Email</th></tr></thead>
+                                                <tbody>
+                                                    {stats.active_users_list.map(user => (
+                                                        <tr key={user.id}>
+                                                            <td style={{ fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                                <div style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10B981' }}></div>
+                                                                {user.name}
+                                                            </td>
+                                                            <td>{user.email}</td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     )}
@@ -164,6 +332,36 @@ function AdminDashboardPage({ onNavigate }) {
                                     <button className="btn btn-primary mt-16" type="submit">Add Parameter</button>
                                 </form>
                             </div></div>
+
+                            {/* Existing Parameters List */}
+                            <h3 className="mt-24 mb-16" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                                Existing Parameters ({paramList.length})
+                            </h3>
+                            <div style={{ maxWidth: '700px', marginBottom: '16px' }}>
+                                <input className="form-input" placeholder="Search parameters..." value={paramSearch} onChange={e => setParamSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+                            </div>
+                            <div className="card" style={{ maxWidth: '700px' }}><div className="card-body" style={{ padding: 0 }}>
+                                <table>
+                                    <thead><tr><th>ID</th><th>Name</th><th>Unit</th><th>Range</th><th>Category</th><th style={{ width: '60px' }}>Action</th></tr></thead>
+                                    <tbody>
+                                        {filteredParams.map(p => (
+                                            <tr key={p.id}>
+                                                <td>{p.id}</td>
+                                                <td style={{ fontWeight: 600 }}>{p.parameter_name}</td>
+                                                <td>{p.unit}</td>
+                                                <td>{p.min_value} - {p.max_value}</td>
+                                                <td>{p.category}</td>
+                                                <td>
+                                                    <button className="btn-icon" style={{ color: '#EF4444' }} onClick={() => handleDeleteParam(p.id, p.parameter_name)} title="Delete">
+                                                        <span className="material-icons-outlined" style={{ fontSize: '20px' }}>delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredParams.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No parameters found</td></tr>}
+                                    </tbody>
+                                </table>
+                            </div></div>
                         </div>
                     )}
 
@@ -186,6 +384,33 @@ function AdminDashboardPage({ onNavigate }) {
                                     <div className="form-group"><label className="form-label">Storage Details</label><input className="form-input" value={drugForm.storage_details} onChange={e => setDrugForm(p => ({ ...p, storage_details: e.target.value }))} /></div>
                                     <button className="btn btn-primary mt-16" type="submit">Add Drug</button>
                                 </form>
+                            </div></div>
+
+                            {/* Existing Drugs List */}
+                            <h3 className="mt-24 mb-16">Existing Drugs ({drugList.length})</h3>
+                            <div style={{ maxWidth: '700px', marginBottom: '16px' }}>
+                                <input className="form-input" placeholder="Search drugs..." value={drugSearch} onChange={e => setDrugSearch(e.target.value)} style={{ maxWidth: '300px' }} />
+                            </div>
+                            <div className="card" style={{ maxWidth: '700px' }}><div className="card-body" style={{ padding: 0 }}>
+                                <table>
+                                    <thead><tr><th>ID</th><th>Drug Name</th><th>Generic Name</th><th>Category</th><th style={{ width: '60px' }}>Action</th></tr></thead>
+                                    <tbody>
+                                        {filteredDrugs.map(d => (
+                                            <tr key={d.id}>
+                                                <td>{d.id}</td>
+                                                <td style={{ fontWeight: 600 }}>{d.drug_name}</td>
+                                                <td>{d.generic_name || '-'}</td>
+                                                <td>{d.drug_category || '-'}</td>
+                                                <td>
+                                                    <button className="btn-icon" style={{ color: '#EF4444' }} onClick={() => handleDeleteDrug(d.id, d.drug_name)} title="Delete">
+                                                        <span className="material-icons-outlined" style={{ fontSize: '20px' }}>delete</span>
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                        {filteredDrugs.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No drugs found</td></tr>}
+                                    </tbody>
+                                </table>
                             </div></div>
                         </div>
                     )}

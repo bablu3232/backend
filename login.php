@@ -16,7 +16,7 @@ $email = trim($data['email']);
 $password = trim($data['password']);
 
 $stmt = $conn->prepare(
-    "SELECT id, full_name, password, phone, date_of_birth, gender FROM users WHERE email = ?"
+    "SELECT id, full_name, password, phone, date_of_birth, gender, profile_image FROM users WHERE email = ?"
 );
 $stmt->bind_param("s", $email);
 $stmt->execute();
@@ -30,6 +30,12 @@ if (!$user || !password_verify($password, $user['password'])) {
     exit;
 }
 
+// Update last_active on login
+$updateStmt = $conn->prepare("UPDATE users SET last_active = NOW() WHERE id = ?");
+$updateStmt->bind_param("i", $user['id']);
+$updateStmt->execute();
+$updateStmt->close();
+
 echo json_encode([
     "message" => "Login successful",
     "user_id" => $user['id'],
@@ -37,5 +43,7 @@ echo json_encode([
     "email" => $email,
     "phone" => $user['phone'] ?? "",
     "date_of_birth" => $user['date_of_birth'] ?? "",
-    "gender" => $user['gender'] ?? ""
+    "gender" => $user['gender'] ?? "",
+    "profile_image" => $user['profile_image'] ?? ""
 ]);
+?>

@@ -34,6 +34,29 @@ const ApiService = {
     updateProfile: (data) =>
         api.post('update_profile.php', data),
 
+    uploadProfileImage: (userId, file) => {
+        const formData = new FormData();
+        formData.append('user_id', userId.toString());
+        formData.append('file', file);
+        return api.post('upload_profile_image.php', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000
+        });
+    },
+
+    getUserProfile: (userId) =>
+        api.get('get_user_profile.php', { params: { user_id: userId } }),
+
+    uploadProfileImage: (userId, file) => {
+        const formData = new FormData();
+        formData.append('user_id', userId.toString());
+        formData.append('file', file);
+        return api.post('upload_profile_image.php', formData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            timeout: 60000
+        });
+    },
+
     // Reports
     uploadReport: (userId, file) => {
         const formData = new FormData();
