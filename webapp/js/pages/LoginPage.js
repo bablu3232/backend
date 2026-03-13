@@ -1,6 +1,52 @@
 // ============================================
-// Login Page
+// Login Page — Split layout with brand slider
 // ============================================
+
+// Shared Auth Brand Panel with Auto-Slider
+function AuthBrandPanel() {
+    const slides = [
+        "Upload & analyze lab reports instantly with AI-powered insights",
+        "Search 10,000+ drugs — dosages, side effects & interactions",
+        "Track your health parameters and monitor trends over time",
+        "Get personalized recommendations based on your lab results",
+        "Secure, private, and built for medical professionals & patients"
+    ];
+
+    const [activeSlide, setActiveSlide] = React.useState(0);
+
+    React.useEffect(() => {
+        const timer = setInterval(() => {
+            setActiveSlide(prev => (prev + 1) % slides.length);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, []);
+
+    return (
+        <div className="auth-split-right">
+            <div className="auth-brand-logo">
+                <img src="assets/logo.png" alt="DrugsSearch" />
+            </div>
+            <div className="auth-brand-name">DrugsSearch</div>
+            <div className="auth-slider">
+                {slides.map((text, i) => (
+                    <div key={i} className={`auth-slide ${i === activeSlide ? 'active' : ''}`}>
+                        <p>{text}</p>
+                    </div>
+                ))}
+            </div>
+            <div className="auth-slider-dots">
+                {slides.map((_, i) => (
+                    <button
+                        key={i}
+                        className={`auth-slider-dot ${i === activeSlide ? 'active' : ''}`}
+                        onClick={() => setActiveSlide(i)}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
 function LoginPage({ onNavigate }) {
     const { login } = useAuth();
     const [email, setEmail] = React.useState('');
@@ -41,38 +87,41 @@ function LoginPage({ onNavigate }) {
     };
 
     return (
-        <div className="auth-container">
-            <div className="auth-card">
-                <div className="auth-header">
-                    <div className="auth-logo" style={{ background: 'transparent' }}><img src="assets/logo.png" alt="DrugSearch" style={{ width: '64px', height: '64px', borderRadius: '16px', objectFit: 'cover' }} /></div>
-                    <h1>Welcome Back</h1>
-                    <p>Sign in to DrugSearch</p>
-                </div>
-                <form className="auth-body" onSubmit={handleSubmit}>
-                    {error && <div className="alert alert-danger"><span className="material-icons-outlined" style={{ fontSize: '18px' }}>error</span>{error}</div>}
-                    <div className="form-group">
-                        <label className="form-label">Email</label>
-                        <input className="form-input" type="text" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} />
+        <div className="auth-split">
+            <div className="auth-split-left">
+                <div className="auth-split-card">
+                    <div className="auth-header">
+                        <div className="auth-logo" style={{ background: 'transparent' }}><img src="assets/logo.png" alt="DrugSearch" style={{ width: '56px', height: '56px', borderRadius: '16px', objectFit: 'cover' }} /></div>
+                        <h1>Welcome Back</h1>
+                        <p>Sign in to your DrugsSearch account</p>
                     </div>
-                    <div className="form-group">
-                        <label className="form-label">Password</label>
-                        <div style={{ position: 'relative' }}>
-                            <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} style={{ paddingRight: '44px' }} />
-                            <span className="material-icons-outlined" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '20px', userSelect: 'none' }}>{showPassword ? 'visibility' : 'visibility_off'}</span>
+                    <form className="auth-body" onSubmit={handleSubmit}>
+                        {error && <div className="alert alert-danger"><span className="material-icons-outlined" style={{ fontSize: '18px' }}>error</span>{error}</div>}
+                        <div className="form-group">
+                            <label className="form-label">Email</label>
+                            <input className="form-input" type="text" placeholder="Enter your email" value={email} onChange={e => setEmail(e.target.value)} />
                         </div>
+                        <div className="form-group">
+                            <label className="form-label">Password</label>
+                            <div style={{ position: 'relative' }}>
+                                <input className="form-input" type={showPassword ? 'text' : 'password'} placeholder="Enter your password" value={password} onChange={e => setPassword(e.target.value)} style={{ paddingRight: '44px' }} />
+                                <span className="material-icons-outlined" onClick={() => setShowPassword(!showPassword)} style={{ position: 'absolute', right: '12px', top: '50%', transform: 'translateY(-50%)', cursor: 'pointer', color: 'var(--text-muted)', fontSize: '20px', userSelect: 'none' }}>{showPassword ? 'visibility' : 'visibility_off'}</span>
+                            </div>
+                        </div>
+                        <div style={{ textAlign: 'right', marginBottom: '20px' }}>
+                            <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('forgot-password'); }} style={{ fontSize: '0.85rem' }}>Forgot password?</a>
+                        </div>
+                        <button className="btn btn-primary btn-full btn-lg" type="submit" disabled={loading}>
+                            {loading ? <><div className="spinner spinner-sm" style={{ borderTopColor: 'white' }}></div> Signing in...</> : 'Sign In'}
+                        </button>
+                    </form>
+                    <div className="auth-footer">
+                        <span style={{ color: 'var(--text-secondary)' }}>Don't have an account? </span>
+                        <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('register'); }}>Sign Up</a>
                     </div>
-                    <div style={{ textAlign: 'right', marginBottom: '20px' }}>
-                        <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('forgot-password'); }} style={{ fontSize: '0.85rem' }}>Forgot password?</a>
-                    </div>
-                    <button className="btn btn-primary btn-full btn-lg" type="submit" disabled={loading}>
-                        {loading ? <><div className="spinner spinner-sm" style={{ borderTopColor: 'white' }}></div> Signing in...</> : 'Sign In'}
-                    </button>
-                </form>
-                <div className="auth-footer">
-                    <span style={{ color: 'var(--text-secondary)' }}>Don't have an account? </span>
-                    <a href="#" onClick={(e) => { e.preventDefault(); onNavigate('register'); }}>Sign Up</a>
                 </div>
             </div>
+            <AuthBrandPanel />
         </div>
     );
 }

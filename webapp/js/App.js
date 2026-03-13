@@ -3,7 +3,7 @@
 // ============================================
 function App() {
     const { isLoggedIn, isAdmin, logout, user } = useAuth();
-    const [page, setPage] = React.useState('login');
+    const [page, setPage] = React.useState('landing');
     const [pageData, setPageData] = React.useState(null);
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
     const { toasts, addToast, removeToast } = useToast();
@@ -27,7 +27,7 @@ function App() {
 
     React.useEffect(() => {
         if (!isLoggedIn && protectedPages.includes(page)) {
-            navigate('login');
+            navigate('landing');
         }
         if (isLoggedIn && !isAdmin && (page === 'login' || page === 'register')) {
             navigate('dashboard');
@@ -66,6 +66,17 @@ function App() {
     const authPages = ['login', 'register', 'forgot-password', 'admin-login'];
     const isAuthPage = authPages.includes(page);
     const isAdminPage = page === 'admin-dashboard';
+    const isLandingPage = page === 'landing';
+
+    // Landing page
+    if (isLandingPage) {
+        return (
+            <>
+                <ToastContainer toasts={toasts} removeToast={removeToast} />
+                <LandingPage onNavigate={navigate} />
+            </>
+        );
+    }
 
     // Auth pages
     if (isAuthPage) {
@@ -119,6 +130,7 @@ function App() {
                     {page === 'profile' && <ProfilePage onNavigate={navigate} />}
                     {page === 'change-password' && <ChangePasswordPage onNavigate={navigate} />}
                     {page === 'about' && <AboutPage onNavigate={navigate} />}
+                    <AppFooter onNavigate={navigate} />
                 </div>
             </div>
         </>

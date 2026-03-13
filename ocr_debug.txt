@@ -1,9 +1,30 @@
-LUDDUU  
-H  
-K  
-LDL Cholesterol  -  83 mg/dL  
-Crlobulin  -  2- 3g/dL  
-- 20 mg/dL  
-BUN  
-FU 212203.  
+DEVİ  # 208 D, Doddapuram Street,  Reddy & Reddy Colony,  
+Diagnostic Centre  (JP Dental Hospital) TIRUPATI.  Ph: 97015 11246, 86868 63591  
+Patient Id  :24-0928003  Report Date : 28-Sep-2024 12:52 PM  
+Patient Name : Mr. T. KISHORE REDDY  Age  : 19 Years Sex : Male  
+Referred By :Dr. IKON HOSPITALS  Reg.Date  : 28-Sep-2024  
+INVESTIGATIONS  PATIENT VALUES UNITS  REFERENCE RANGE  
+COMPLETE BLOOD COUNTS  
+Haemoglobin  : 13.0  gms%  Male  : 13 - 18  
+Female : 12 - 16  
+Total WBC Count  : 8400  cells /cumm  4000 - 11000  
+RBC Count  : 4.39  M/cumm  4.5 - 5.5 m  
+DIFFERENTIAL COUNT  
+Neutrophils  : 69  %  40 - 75  
+Lymphocytes  26  %  20 - 45  
+Eosinophils  : 01  %  01 - 06  
+Monocytes  04  %  02 - 10  
+Basophils  : 00  %  00 - 01  
+Platelet Count  2.25  lakhs/cumm  1.5 - 4.5  
+PCV  39.6  Vol %  40 - 54  
+MCV  : 90.3  78-98  
+MCH  : 29.6  Pg  27 - 32  
+MCHC  : 32.8  %  30 - 36  
+RENAL FUNCTION TEST:  
+Blood Urea  31  mg/dl  10 - 50  
+Serum Creatinine  1.1  mg/dl  < 1.3  
+Serum Uric Acid  5.7  mg/di  M: 3.5 - 7.2  
+F : 2.6 - 6.0  
+Note: This Report is subjecte to terms and conditions mentioned overleat  
+Partial Reprouction of this Report is not Permitted  
 

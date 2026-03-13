@@ -21,7 +21,7 @@ function Sidebar({ currentPage, onNavigate, onLogout, sidebarOpen, onCloseSideba
             <div className={`sidebar-overlay ${sidebarOpen ? 'show' : ''}`} onClick={onCloseSidebar}></div>
             <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
                 <div className="sidebar-logo">
-                    <div className="logo-icon" style={{ background: 'transparent', overflow: 'hidden' }}><img src="assets/logo.png" alt="DS" style={{ width: '40px', height: '40px', borderRadius: '12px', objectFit: 'cover' }} /></div>
+                    <div className="logo-icon" style={{ background: 'transparent', overflow: 'hidden' }}><img src="assets/logo.png" alt="DS" style={{ width: '44px', height: '44px', borderRadius: '14px', objectFit: 'cover' }} /></div>
                     <h2>DrugSearch</h2>
                 </div>
                 <nav className="sidebar-nav">
