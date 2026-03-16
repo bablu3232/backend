@@ -8,12 +8,41 @@ function App() {
     const [sidebarOpen, setSidebarOpen] = React.useState(false);
     const { toasts, addToast, removeToast } = useToast();
 
+    // Track if navigation is programmatic (to avoid double-push)
+    const isPoppingState = React.useRef(false);
+
     const navigate = (pageName, data = null) => {
         setPage(pageName);
         setPageData(data);
         window.scrollTo(0, 0);
         setSidebarOpen(false);
+
+        // Push browser history entry (skip if triggered by popstate)
+        if (!isPoppingState.current) {
+            window.history.pushState({ page: pageName, data: data }, '', '');
+        }
     };
+
+    // Replace initial history state so the first entry has valid state
+    React.useEffect(() => {
+        window.history.replaceState({ page: 'landing', data: null }, '', '');
+    }, []);
+
+    // Listen for browser back/forward buttons
+    React.useEffect(() => {
+        const handlePopState = (event) => {
+            if (event.state && event.state.page) {
+                isPoppingState.current = true;
+                setPage(event.state.page);
+                setPageData(event.state.data || null);
+                window.scrollTo(0, 0);
+                setSidebarOpen(false);
+                isPoppingState.current = false;
+            }
+        };
+        window.addEventListener('popstate', handlePopState);
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
 
     const handleLogout = () => {
         logout();
