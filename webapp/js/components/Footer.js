@@ -26,7 +26,7 @@ function AppFooter({ onNavigate }) {
                     <div className="footer-links">
                         <h4>Quick Links</h4>
                         <ul>
-                            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate(isLoggedIn ? 'dashboard' : 'landing'); }}>Home</a></li>
+                            <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate(isLoggedIn ? 'dashboard' : 'login'); }}>Home</a></li>
                             <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate(isLoggedIn ? 'drug-search' : 'login'); }}>Drug Search</a></li>
                             <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate(isLoggedIn ? 'upload' : 'login'); }}>Upload Report</a></li>
                             <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate(isLoggedIn ? 'history' : 'login'); }}>Report History</a></li>
@@ -38,9 +38,7 @@ function AppFooter({ onNavigate }) {
                         <h4>Support</h4>
                         <ul>
                             <li><a href="#" onClick={(e) => { e.preventDefault(); onNavigate(isLoggedIn ? 'about' : 'landing'); }}>About Us</a></li>
-                            <li><a href="#" onClick={(e) => e.preventDefault()}>Privacy Policy</a></li>
-                            <li><a href="#" onClick={(e) => e.preventDefault()}>Terms of Service</a></li>
-                            <li><a href="#" onClick={(e) => e.preventDefault()}>Medical Disclaimer</a></li>
+
                         </ul>
                     </div>
 
