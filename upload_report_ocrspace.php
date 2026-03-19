@@ -64,50 +64,16 @@ logDebug("File moved successfully.");
 
 $mime_type = isset($_FILES["report"]["type"]) && $_FILES["report"]["type"] !== '' ? $_FILES["report"]["type"] : null;
 
-// Run Python OCRSpace extraction script
-$pythonPath = "C:\\Users\\Nikhil M\\AppData\\Local\\Programs\\Python\\Python310\\python.exe";
-if (!file_exists($pythonPath)) {
-    logDebug("Custom python path not found, falling back to 'python'");
-    $pythonPath = "python";
-} else {
-    logDebug("Found python at $pythonPath");
-}
+require_once 'OcrExtractor.php';
 
-$fileSize = filesize($filePath);
-if ($fileSize < 1048576) {
-    logDebug("File under 1MB ($fileSize bytes) -> OCRSpace");
-    $scriptPath = __DIR__ . DIRECTORY_SEPARATOR . 'ocrspace_extract.py';
-} else {
-    logDebug("File over 1MB ($fileSize bytes) -> XAMPP Tesseract");
-    $scriptPath = __DIR__ . '/../../../../xampp/htdocs/drugssearch/ocr_extract.py';
-    if (!file_exists($scriptPath)) {
-        logDebug("XAMPP OCR script not found. Falling back to local ocr_extract.py");
-        $scriptPath = __DIR__ . DIRECTORY_SEPARATOR . 'ocr_extract.py';
-    }
-}
-
-if (!file_exists($scriptPath)) {
-    logDebug("Error: OCR Script not found at $scriptPath");
-    echo json_encode(['error' => 'OCR Script not found at: ' . $scriptPath]);
-    exit;
-}
-
-$python = '"' . $pythonPath . '"';
-$script = '"' . $scriptPath . '"';
-$fileArg = '"' . realpath($filePath) . '"';
-
-$command = "$python $script $fileArg 2>&1";
-logDebug("Executing Command: $command");
-
-$output = shell_exec($command);
-logDebug("OCR Output: " . ($output ?? 'NULL'));
-
-$extracted_text = $output;
-if ($output !== null && stripos($output, "OCR OUTPUT:") !== false) {
-    $parts = preg_split('/\s*OCR OUTPUT:\s*/i', $output, 2);
-    $extracted_text = isset($parts[1]) ? trim($parts[1]) : $output;
-} else {
-    $extracted_text = $output === null ? '' : trim($output);
+logDebug("Starting OCR Extraction via PHP OcrExtractor...");
+try {
+    $result_array = OcrExtractor::process_file(realpath($filePath));
+    $extracted_text = json_encode($result_array);
+    logDebug("OCR Output generated successfully.");
+} catch (Exception $e) {
+    logDebug("Error during OCR extraction: " . $e->getMessage());
+    $extracted_text = json_encode(["report_category" => "Error", "parameters" => [], "patient_details" => []]);
 }
 
 // Parse patient details safely

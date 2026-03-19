@@ -16,12 +16,10 @@ if (empty($message)) {
     die(json_encode(["error" => "Empty message."]));
 }
 
-// --- CALL LOCAL NLP ENGINE ---
-// Use shell_exec to run the python script and get the intent
-$escaped_message = escapeshellarg($message);
-$python_cmd = "python nlp_engine.py $escaped_message";
-$nlp_output = shell_exec($python_cmd);
-$nlp_data = json_decode($nlp_output, true);
+require_once 'NlpEngine.php';
+
+// --- CALL LOCAL PHP NLP ENGINE ---
+$nlp_data = NlpEngine::detect_intent($message);
 
 $intent = $nlp_data['intent'] ?? 'UNKNOWN';
 $entity = $nlp_data['entity'] ?? null;

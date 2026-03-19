@@ -59,32 +59,16 @@ if ($reportId) {
 
 if ($success) {
     // Run Analysis Script FIRST to get recommendations
-    // Prepare JSON input for the python script
+    require_once 'AnalyzeReport.php';
+    
     $analysisInput = json_encode([
         "category" => $category,
         "parameters" => $parameters
     ]);
-    
-    // Create a temporary file to store the JSON input
-    $tempFile = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'analysis_input_' . uniqid() . '.json';
-    file_put_contents($tempFile, $analysisInput);
-    
-    // Execute Python script with file path
-    // Use absolute path for python executable
-    $pythonPath = "C:\\Users\\Nikhil M\\AppData\\Local\\Programs\\Python\\Python311\\python.exe";
-    $scriptPath = __DIR__ . "\\analyze_report.py";
-    
-    // Create command - pass the temp file path
-    $command = "\"$pythonPath\" \"$scriptPath\" \"$tempFile\" 2>&1";
-    $analysisOutput = shell_exec($command);
-    
-    // Clean up temp file
-    if (file_exists($tempFile)) {
-        unlink($tempFile);
-    }
-    
-    // Parse analysis output
-    $analysisResult = json_decode($analysisOutput, true);
+
+    logDebug("Running native PHP AnalyzeReport...");
+    $analysisResult = AnalyzeReport::analyze($analysisInput);
+    logDebug("Analysis Complete.");
     
     // Delete existing parameters if updating
     if ($reportId) {

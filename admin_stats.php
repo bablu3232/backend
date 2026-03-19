@@ -99,6 +99,5 @@ $stats["chart_data"] = array(
     "users" => $usersData,
     "reports" => $reportsData
 );
-
 echo json_encode(["status" => "success", "stats" => $stats]);
 ?>
