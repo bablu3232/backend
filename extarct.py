@@ -5,12 +5,8 @@ import mysql.connector
 import google.generativeai as genai
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
 load_dotenv()
 
-# ==========================================
-# GEMINI API KEY LOADED FROM .ENV
-# ==========================================
 API_KEY = os.getenv("GEMINI_API_KEY")
 
 # Optional: Output log for debugging

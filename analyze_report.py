@@ -102,6 +102,8 @@ def analyze(input_json):
                 detected_parameters[name] = {
                     "value": value,
                     "unit": db_param['unit'],
+                    "min_value": float(db_param['min_value']),
+                    "max_value": float(db_param['max_value']),
                     "status": status,
                     "risk_level": risk_level,
                     "deviation": round(deviation, 1),

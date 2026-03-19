@@ -478,6 +478,8 @@ def try_add_parameter(canonical_name, value, db_param):
     detected_parameters[canonical_name] = {
         "value": val,
         "unit": db_param['unit'],
+        "min_value": min_val,
+        "max_value": max_val,
         "status": status,
         "risk_level": risk_level,
         "deviation": round(deviation, 1),
