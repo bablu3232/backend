@@ -10,6 +10,7 @@ $email = trim($data['email'] ?? '');
 $otp = trim($data['otp'] ?? '');
 
 if (!$email || !$otp) {
+    http_response_code(400);
     echo json_encode(["message" => "Email and OTP required"]);
     exit;
 }
@@ -22,18 +23,22 @@ $stmt->execute();
 $user = $stmt->get_result()->fetch_assoc();
 
 if (!$user) {
+    http_response_code(404);
     echo json_encode(["message" => "User not found"]);
     exit;
 }
 
-if ($user['otp'] !== $otp) {
+if ($user['otp'] != $otp) {
+    http_response_code(401);
     echo json_encode(["message" => "Invalid OTP"]);
     exit;
 }
 
 if (strtotime($user['otp_expiry']) < time()) {
+    http_response_code(410);
     echo json_encode(["message" => "OTP expired"]);
     exit;
 }
 
 echo json_encode(["message" => "OTP verified"]);
+?>
